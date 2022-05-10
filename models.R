@@ -152,21 +152,21 @@ model <- function(freq, sort = FALSE) {
     }
   }
 
-  ### MEk & Cov=0 ###
+  #### MEk & Cov=0 model ####
   library(Rsolnp)
   
-  ##### define constraint functions #####
+  #### define constraint functions ####
   ### MEk constraint###
   MEkConstrFunc <- function(p) {
     MEkConstraints <- c()
     MEkConstraints <- append(MEkConstraints, sum(p) - 1)
     
-    l <- length(MEkSolnp) + 1
-    for (k in 1:l) {
+    k <- length(MEkSolnp) + 1
+    for (l in 1:k) {
       momentConstraints <- c()
       for (i in 1:r) {
         for (j in 1:r) {
-          momentConstraints <- append(momentConstraints, j^k - i^k)
+          momentConstraints <- append(momentConstraints, j^l - i^l)
         }
       }
       MEkConstraints <- append(MEkConstraints, sum(momentConstraints * p))
@@ -188,11 +188,10 @@ model <- function(freq, sort = FALSE) {
     cov0Constraints <- append(cov0Constraints, sum(c(1:r %x% 1:r) * (p - prodOfExp)))
     return(cov0Constraints)
   }
-  
+  #### define some functions and arguments for solnp & functions####
   removeZero <- function(freq) {
     return(freq[freq > 0])
   }
-  ### Mokuteki hennsuu
   objectFunc <- function(p) {
     return(-sum(freq * log(p)))
   }
@@ -204,7 +203,9 @@ model <- function(freq, sort = FALSE) {
   # => 1 1 1 1 1
 
   fullModel <- function(freq) {
-    return(-sum(removeZero(freq) * log(removeZero(freq / sum(freq)))))
+    nonZeroFreq <- removeZero(freq)
+    nonZeroMean <- removeZero(freq / sum(freq))
+    return(-sum(nonZeroFreq * log(nonZeroMean)))
   }
   moleculeOfConst <- denominatorOfConst <- 0
   for (i in 1:sum(freq)) moleculeOfConst <- moleculeOfConst + log(i)
@@ -222,7 +223,7 @@ model <- function(freq, sort = FALSE) {
   ###Cov=0 Solnp###
   tmp <- solnp(p0, fun = objectFunc, eqfun = cov0ConstrFunc, eqB = c(0, 0), LB = paramLowerBound)
   cov0Solnp <- list(tmp)
-
+  #### calculate G2, MaxLogL, AIC####
   getValues <- function(solnpList) {
     for (k in length(solnpList):1) {
       if (length(solnpList) == r - 1) {
@@ -293,7 +294,7 @@ model <- function(freq, sort = FALSE) {
   }
 
   cat("---\n")
-  cat("Signif. codes:  0 e***f 0.001 e**f 0.01 e*f 0.05 e.f 0.1 e f 1\n")
+  cat("Signif. codes:  0 ?e***?f 0.001 ?e**?f 0.01 ?e*?f 0.05 ?e.?f 0.1 ?e ?f 1\n")
 }
 
 
