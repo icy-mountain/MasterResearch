@@ -46,6 +46,6 @@ CalcAICplus <- function(freq, solnpResult) {
   G2 <- CalcG2(freq, mhat)
   return(G2 - 2 * solnpResult$df)
 }
-objectFunc <- function(p, freq) {
+objectFunc <- function(p, freq, ...) {
   return(-sum(freq * log(p)))
 }
