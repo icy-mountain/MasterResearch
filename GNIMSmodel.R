@@ -1,10 +1,14 @@
 rm(list = ls(all.names = TRUE))
 source("./utilities.R")
-hoge <- c(2, 3, 2, 1, #i=1
-          1, 8, 6, 5, #i=2
-          2, 4, 17, 5,#i=3
-          1, 3, 3, 10)#i=4
-freq <- hoge
+tab1_freq <- c(2, 3, 2, 1,
+               1, 8, 6, 5,
+               2, 4, 17, 5,
+               1, 3, 3, 10)
+tab3_freq <- c(248, 36, 5, 10,
+               36, 49, 23, 15,
+               4, 11, 13, 9,
+               1, 1, 1, 9)
+freq <- tab3_freq
 GNiMSConstrFunc <- function(p, phai, ...) {
   rows <- CountRow(p)
   GNiMS_0Sum_Constr <- c(sum(p) - 1)
@@ -27,7 +31,7 @@ GNiMSModel <- function(delta, phai, freq) {
   solnpResult$df <- rows - 2
   return(solnpResult)
 }
-GNiMSDeltaPhaiOptim <- function(params, freq, output=FALSE) {
+forDeltaPhaiOptim <- function(params, freq, output=FALSE) {
   delta <- params[[1]]
   phai  <- params[[2]]
   if (output == TRUE)
@@ -40,11 +44,12 @@ GNiMSDeltaPhaiOptim <- function(params, freq, output=FALSE) {
   optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
   return(optimizedFuncValue)
 }
-optimValues <- optim(c(1,1), GNiMSDeltaPhaiOptim, freq = freq)
+optimValues <- optim(c(1,1), forDeltaPhaiOptim , freq = freq)
 optimDelta <- optimValues$par[[1]]
 optimPhai <- optimValues$par[[2]]
 optimDelta
 optimPhai
+optimDelta * optimPhai^2
 result <- GNiMSModel(optimDelta, optimPhai, freq)
 mhat <- result$pars * sum(freq)
 mhat

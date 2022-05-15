@@ -1,10 +1,14 @@
 rm(list = ls(all.names = TRUE))
 source("./utilities.R")
-hoge <- c(2, 3, 2, 1, #i=1
-          1, 8, 6, 5, #i=2
-          2, 4, 17, 5,#i=3
-          1, 3, 3, 10)#i=4
-freq <- hoge
+tab1_freq <- c(2, 3, 2, 1,
+               1, 8, 6, 5,
+               2, 4, 17, 5,
+               1, 3, 3, 10)
+tab3_freq <- c(248, 36, 5, 10,
+               36, 49, 23, 15,
+               4, 11, 13, 9,
+               1, 1, 1, 9)
+freq <- tab1_freq
 ### "..." is solution of nsolnp bug
 NiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)

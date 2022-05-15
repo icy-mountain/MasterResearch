@@ -1,10 +1,14 @@
 rm(list = ls(all.names = TRUE))
 source("./utilities.R")
-hoge <- c(2, 3, 2, 1, #i=1
-          1, 8, 6, 5, #i=2
-          2, 4, 17, 5,#i=3
-          1, 3, 3, 10)#i=4
-freq <- hoge
+tab1_freq <- c(2, 3, 2, 1,
+               1, 8, 6, 5,
+               2, 4, 17, 5,
+               1, 3, 3, 10)
+tab3_freq <- c(248, 36, 5, 10,
+               36, 49, 23, 15,
+               4, 11, 13, 9,
+               1, 1, 1, 9)
+freq <- tab1_freq
 ## "..." is solution of nsolnp bug
 ENiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
@@ -27,7 +31,7 @@ ENiMSModel <- function(delta, freq) {
   solnpResult$df <- rows - 1
   return(solnpResult)
 }
-ENiMSDeltaOptim <- function(delta, freq, output=FALSE) {
+forDeltaOptim <- function(delta, freq, output=FALSE) {
   if (output == TRUE)
     solnpResult <- ENiMSModel(delta, freq)
   if (output == FALSE) {
@@ -38,7 +42,7 @@ ENiMSDeltaOptim <- function(delta, freq, output=FALSE) {
   optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
   return(optimizedFuncValue)
 }
-optimValues <- optimize(ENiMSDeltaOptim, interval = c(0, 10), freq = freq)
+optimValues <- optimize(forDeltaOptim, interval = c(0, 10), freq = freq)
 optimDelta <- optimValues$minimum
 result <- ENiMSModel(delta = optimDelta,freq = freq)
 mhat <- result$pars * sum(freq)
