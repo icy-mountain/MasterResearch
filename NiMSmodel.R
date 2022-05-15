@@ -31,6 +31,7 @@ NiMSModel <- function(freq) {
   return(solnpResult)
 }
 result <- NiMSModel(freq = freq)
+result
 mhat <- result$pars * sum(freq)
 mhat
 G2 <- CalcG2(freq, mhat)

@@ -208,7 +208,10 @@ model <- function(freq, sort = FALSE) {
     return(-sum(nonZeroFreq * log(nonZeroMean)))
   }
   moleculeOfConst <- denominatorOfConst <- 0
+  ### 多項分布の分子(numerator)・分母(denominator)のlog
+  ### sigma_(i=1)^(sum(freq)) {log(i)}
   for (i in 1:sum(freq)) moleculeOfConst <- moleculeOfConst + log(i)
+  ### for i in freq {sigma_(j=1)^(i) {log(j)}}
   for (i in removeZero(freq)) {
     for (j in 1:i) {
       denominatorOfConst <- denominatorOfConst + log(j)
