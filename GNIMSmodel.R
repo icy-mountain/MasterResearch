@@ -44,7 +44,7 @@ forDeltaPhaiOptim <- function(params, freq, output=FALSE) {
   optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
   return(optimizedFuncValue)
 }
-optimValues <- optim(c(1,1), forDeltaPhaiOptim , freq = freq)
+system.time(optimValues <- optim(c(1,1), forDeltaPhaiOptim , freq = freq))
 optimDelta <- optimValues$par[[1]]
 optimPhai <- optimValues$par[[2]]
 optimDelta
