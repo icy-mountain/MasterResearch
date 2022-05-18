@@ -10,7 +10,6 @@ tab3_freq <- c(248, 36, 5, 10,
                36, 49, 23, 15,
                4, 11, 13, 9,
                1, 1, 1, 9)
-freq <- tab3_freq
 NiMSmConstrFunc <- function(p, m, deltas, ...) {
   rows <- CountRow(p)
   NiMSm_0Sum_Constr <- c(sum(p) - 1)
@@ -46,7 +45,7 @@ forDeltasOptim <- function(m, deltas, freq, output=FALSE) {
   optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
   return(optimizedFuncValue)
 }
-DisplayNiMSmResult <- function(m) {
+DisplayNiMSmResult <- function(freq, m) {
   deltas <- rep(1, m)
   if (m == 1) {
     optimValues <- optimize(forDeltasOptim, interval = c(0, 10), freq = freq, m = m)
@@ -57,31 +56,18 @@ DisplayNiMSmResult <- function(m) {
   }
   result <- NiMSmModel(m, modelParams, freq)
   result$modelParams <- modelParams
-  df <- result$df
   mhat <- result$pars * sum(freq)
-  G2 <- CalcG2(freq, mhat)
-  pValue <- pchisq(q=G2, df=result$df, lower.tail=FALSE)
-  AICp <- CalcAICplus(freq, result)
-  print(sprintf("df:%s", df))
-  print(sprintf("G2:%s", G2))
-  print(sprintf("pValue:%s", pValue))
-  print(sprintf("AICp:%s", AICp))
+  result$G2 <- CalcG2(freq, mhat)
+  result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)
+  result$AICp <- CalcAICplus(freq, result)
+  print(sprintf("df:%s", result$df))
+  print(sprintf("G2:%s", result$G2))
+  print(sprintf("pValue:%s", result$pValue))
+  print(sprintf("AICp:%s", result$AICp))
   return(result)
 }
 m <- 2
-system.time(result <- DisplayNiMSmResult(m))
-result$modelParams
-
-
-
-
-
-
-
-
-
-
-###freq=tab1 NiMS(m=2) delta[[1]] delta[[2]]
-#1.3137746 0.9690601
-###freq=tab1 GNiMS delta phai
-#1.273685 0.9689002
+system.time(NiMSm_tab1_result <- DisplayNiMSmResult(tab1_freq, m))
+system.time(NiMSm_tab3_result <- DisplayNiMSmResult(tab3_freq, m))
+NiMSm_tab1_result$modelParams
+NiMSm_tab3_result$modelParams
