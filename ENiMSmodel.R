@@ -1,4 +1,6 @@
 rm(list = ls(all.names = TRUE))
+install.packages('Rsolnp')
+library(Rsolnp)
 source("./utilities.R")
 tab1_freq <- c(2, 3, 2, 1,
                1, 8, 6, 5,
@@ -42,11 +44,21 @@ forDeltaOptim <- function(delta, freq, output=FALSE) {
   optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
   return(optimizedFuncValue)
 }
-optimValues <- optimize(forDeltaOptim, interval = c(0, 10), freq = freq)
-optimDelta <- optimValues$minimum
-result <- ENiMSModel(delta = optimDelta,freq = freq)
-mhat <- result$pars * sum(freq)
-G2 <- CalcG2(freq, mhat)
-G2
-pchisq(q=G2, df=result$df, lower.tail=FALSE)
-CalcAICplus(freq, result)
+DisplayResult <- function() {
+  optimValues <- optimize(forDeltaOptim, interval = c(0, 10), freq = freq)
+  optimDelta <- optimValues$minimum
+  result <- ENiMSModel(delta = optimDelta,freq = freq)
+  result$modelParams <- optimDelta
+  df <- result$df
+  mhat <- result$pars * sum(freq)
+  G2 <- CalcG2(freq, mhat)
+  pValue <- pchisq(q=G2, df=result$df, lower.tail=FALSE)
+  AICp <- CalcAICplus(freq, result)
+  print(sprintf("df:%s", df))
+  print(sprintf("G2:%s", G2))
+  print(sprintf("pValue:%s", pValue))
+  print(sprintf("AICp:%s", AICp))
+  return(result)
+}
+system.time(result <- DisplayResult())
+result$modelParams

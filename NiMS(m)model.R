@@ -1,4 +1,6 @@
 rm(list = ls(all.names = TRUE))
+install.packages('Rsolnp')
+library(Rsolnp)
 source("./utilities.R")
 tab1_freq <- c(2, 3, 2, 1,
                1, 8, 6, 5,
@@ -8,9 +10,7 @@ tab3_freq <- c(248, 36, 5, 10,
                36, 49, 23, 15,
                4, 11, 13, 9,
                1, 1, 1, 9)
-freq <- tab1_freq
-rows <- CountRow(freq)
-### m=1 -> count(delta)=1; m=2 -> count(delta)=2 
+freq <- tab3_freq
 NiMSmConstrFunc <- function(p, m, deltas, ...) {
   rows <- CountRow(p)
   NiMSm_0Sum_Constr <- c(sum(p) - 1)
@@ -68,9 +68,20 @@ DisplayNiMSmResult <- function(m) {
   print(sprintf("AICp:%s", AICp))
   return(result)
 }
-m <- 1
-system.time(result <- DisplayNiMSmResult(1))
+m <- 2
+system.time(result <- DisplayNiMSmResult(m))
 result$modelParams
-mhat <- result$pars * sum(freq)
-mhat
 
+
+
+
+
+
+
+
+
+
+###freq=tab1 NiMS(m=2) delta[[1]] delta[[2]]
+#1.3137746 0.9690601
+###freq=tab1 GNiMS delta phai
+#1.273685 0.9689002
