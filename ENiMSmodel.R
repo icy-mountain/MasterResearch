@@ -11,13 +11,13 @@ tab3_freq <- c(248, 36, 5, 10,
                4, 11, 13, 9,
                1, 1, 1, 9)
 ## "..." is solution of nsolnp bug
-ENiMSConstrFunc <- function(p, ...) {
+ENiMSConstrFunc <- function(p, delta, ...) {
   rows <- CountRow(p)
   ENiMS_0Sum_Constr <- c(sum(p) - 1)
   for (i in 1:rows) {
     W1 <- sum(CalcW1Area(p, i))
     W2 <- sum(CalcW2Area(p, i))
-    ENiMS_0Sum_Constr <- append(ENiMS_0Sum_Constr, W1 / (W2 + 1e-15))
+    ENiMS_0Sum_Constr <- append(ENiMS_0Sum_Constr, W1 - delta * W2)
   }
   return (ENiMS_0Sum_Constr)
 }
@@ -25,10 +25,9 @@ ENiMSModel <- function(delta, freq) {
   p0 <- rep(1/length(freq), length(freq))
   lowerBound <- rep(0, length(freq))
   rows <- CountRow(freq)
-  eqB <- c(0)
-  eqB <- append(eqB, rep(delta, rows))
+  eqB <- rep(0, rows + 1)
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = ENiMSConstrFunc, eqB = eqB,
-                      LB = lowerBound, freq = freq)
+                      LB = lowerBound, freq = freq, delta = delta)
   solnpResult$df <- rows - 1
   return(solnpResult)
 }
