@@ -11,42 +11,39 @@ tab3_freq <- c(248, 36, 5, 10,
                4, 11, 13, 9,
                1, 1, 1, 9)
 ## "..." is solution of nsolnp bug
-ENiMSConstrFunc <- function(p, delta, ...) {
+ENiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   ENiMS_0Sum_Constr <- c(sum(p) - 1)
+  delta <- sum(CalcW1Area(p, 1)) / (sum(CalcW2Area(p, 1)))
+  sumW1 <- 0
+  sumW2 <- 0
+  for (i in 1:rows) {
+    sumW1 <- sumW1 + sum(CalcW1Area(p, i))
+    sumW2 <- sumW2 + sum(CalcW2Area(p, i))
+  }
+  #delta <- sumW1 / (sumW2 + 1e-15)
   for (i in 1:rows) {
     W1 <- sum(CalcW1Area(p, i))
     W2 <- sum(CalcW2Area(p, i))
-    ENiMS_0Sum_Constr <- append(ENiMS_0Sum_Constr, W1 - delta * W2)
+    ENiMS_0Sum_Constr <- append(ENiMS_0Sum_Constr, W1 - delta * W2 )
   }
   return (ENiMS_0Sum_Constr)
 }
-ENiMSModel <- function(delta, freq) {
-  p0 <- rep(1/length(freq), length(freq))
+ENiMSModel <- function(freq) {
+  p0 <- freq / sum(freq)
   lowerBound <- rep(0, length(freq))
   rows <- CountRow(freq)
   eqB <- rep(0, rows + 1)
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = ENiMSConstrFunc, eqB = eqB,
-                      LB = lowerBound, freq = freq, delta = delta)
+                      LB = lowerBound, freq = freq)
   solnpResult$df <- rows - 1
   return(solnpResult)
 }
-forDeltaOptim <- function(delta, freq, output=FALSE) {
-  if (output == TRUE)
-    solnpResult <- ENiMSModel(delta, freq)
-  if (output == FALSE) {
-    sink(nullfile())
-    solnpResult <- ENiMSModel(delta, freq)
-    sink()
-  }
-  optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
-  return(optimizedFuncValue)
-}
 DisplayResult <- function(freq) {
-  optimValues <- optimize(forDeltaOptim, interval = c(0, 10), freq = freq)
-  optimDelta <- optimValues$minimum
-  result <- ENiMSModel(delta = optimDelta,freq = freq)
-  result$modelParams <- optimDelta
+  result <- ENiMSModel(freq = freq)
+  phat <- result$pars
+  delta <- sum(CalcW1Area(phat, 1)) / sum(CalcW2Area(phat, 1))
+  result$modelParams <- delta
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
   result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)
@@ -61,3 +58,16 @@ system.time(ENiMS_tab1_result <- DisplayResult(tab1_freq))
 system.time(ENiMS_tab3_result <- DisplayResult(tab3_freq))
 ENiMS_tab1_result$modelParams
 ENiMS_tab3_result$modelParams
+#######
+rows <- CountRow(tab1_freq)
+p0 <- rep(1/length(tab1_freq), rows*rows)
+p0 <- tab1_freq / sum(tab1_freq)
+tab1_freq[1:4] / sum(tab1_freq[1:4])
+sumW1 <- 0
+sumW2 <- 0
+for (i in 1:rows) {
+  sumW1 <- sumW1 + sum(CalcW1Area(p0, i))
+  sumW2 <- sumW2 + sum(CalcW2Area(p0, i))
+}
+sumW1
+sumW2
