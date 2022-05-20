@@ -14,17 +14,11 @@ tab3_freq <- c(248, 36, 5, 10,
 ENiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   ENiMS_0Sum_Constr <- c(sum(p) - 1)
-  delta <- sum(CalcW1Area(p, 1)) / (sum(CalcW2Area(p, 1)))
-  sumW1 <- 0
-  sumW2 <- 0
+  #delta <- sum(ExtractW1Area(p, 1)) / (sum(ExtractW2Area(p, 1)))
+  delta <- SumAllW1Area(p) / SumAllW2Area(p)
   for (i in 1:rows) {
-    sumW1 <- sumW1 + sum(CalcW1Area(p, i))
-    sumW2 <- sumW2 + sum(CalcW2Area(p, i))
-  }
-  #delta <- sumW1 / (sumW2 + 1e-15)
-  for (i in 1:rows) {
-    W1 <- sum(CalcW1Area(p, i))
-    W2 <- sum(CalcW2Area(p, i))
+    W1 <- sum(ExtractW1Area(p, i))
+    W2 <- sum(ExtractW2Area(p, i))
     ENiMS_0Sum_Constr <- append(ENiMS_0Sum_Constr, W1 - delta * W2 )
   }
   return (ENiMS_0Sum_Constr)
@@ -42,7 +36,7 @@ ENiMSModel <- function(freq) {
 DisplayResult <- function(freq) {
   result <- ENiMSModel(freq = freq)
   phat <- result$pars
-  delta <- sum(CalcW1Area(phat, 1)) / sum(CalcW2Area(phat, 1))
+  delta <- sum(ExtractW1Area(phat, 1)) / sum(ExtractW2Area(phat, 1))
   result$modelParams <- delta
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
@@ -66,8 +60,8 @@ tab1_freq[1:4] / sum(tab1_freq[1:4])
 sumW1 <- 0
 sumW2 <- 0
 for (i in 1:rows) {
-  sumW1 <- sumW1 + sum(CalcW1Area(p0, i))
-  sumW2 <- sumW2 + sum(CalcW2Area(p0, i))
+  sumW1 <- sumW1 + sum(ExtractW1Area(p0, i))
+  sumW2 <- sumW2 + sum(ExtractW2Area(p0, i))
 }
 sumW1
 sumW2

@@ -15,8 +15,8 @@ NiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   NiMS_0Sum_Constr <- c(sum(p) - 1)
   for (i in 1:rows) {
-    W1 <- sum(CalcW1Area(p, i))
-    W2 <- sum(CalcW2Area(p, i))
+    W1 <- sum(ExtractW1Area(p, i))
+    W2 <- sum(ExtractW2Area(p, i))
     NiMS_0Sum_Constr <- append(NiMS_0Sum_Constr, W1 - W2)
   }
   return (NiMS_0Sum_Constr)

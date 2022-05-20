@@ -17,7 +17,7 @@ fullModel <- function(freq) {
   return(-sum(nonZeroFreq * log(nonZeroMean)))
 }
 # W1 = P(X<=i, Y>=i) 
-CalcW1Area <- function(p, i) {
+ExtractW1Area <- function(p, i) {
   IdxVec <- 1:length(p)
   W1Indices <- c()
   for (idx in IdxVec) {
@@ -28,7 +28,7 @@ CalcW1Area <- function(p, i) {
   return(p[W1Indices])
 }
 # W2 = P(X>=i, Y<=i) 
-CalcW2Area <- function(p, i) {
+ExtractW2Area <- function(p, i) {
   IdxVec <- 1:length(p)
   W1Indices <- c()
   for (idx in IdxVec) {
@@ -48,4 +48,18 @@ CalcAICplus <- function(freq, solnpResult) {
 }
 objectFunc <- function(p, freq, ...) {
   return(-sum(freq * log(p)))
+}
+SumAllW1Area <- function(p) {
+  ans <- 0
+  rows <- CountRow(p)
+  for (i in 1:rows)
+    ans <- ans + sum(ExtractW1Area(p, i))
+  return(ans)
+}
+SumAllW2Area <- function(p) {
+  ans <- 0
+  rows <- CountRow(p)
+  for (i in 1:rows)
+    ans <- ans + sum(ExtractW2Area(p, i))
+  return(ans)
 }

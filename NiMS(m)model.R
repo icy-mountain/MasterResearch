@@ -14,8 +14,8 @@ NiMSmConstrFunc <- function(p, m, deltas, ...) {
   rows <- CountRow(p)
   NiMSm_0Sum_Constr <- c(sum(p) - 1)
   for (i in 1:rows) {
-    W1 <- sum(CalcW1Area(p, i))
-    W2 <- sum(CalcW2Area(p, i))
+    W1 <- sum(ExtractW1Area(p, i))
+    W2 <- sum(ExtractW2Area(p, i))
     delta_m_i <- 1
     for (k in 1:m){
       delta_m_i <- delta_m_i * deltas[[k]]^(i^(k-1))
