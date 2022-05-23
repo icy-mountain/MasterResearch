@@ -63,3 +63,17 @@ SumAllW2Area <- function(p) {
     ans <- ans + sum(ExtractW2Area(p, i))
   return(ans)
 }
+MulAllW1Area <- function(p) {
+  ans <- 1
+  rows <- CountRow(p)
+  for (i in 1:rows)
+    ans <- ans * sum(ExtractW1Area(p, i))
+  return(ans)
+}
+MulAllW2Area <- function(p) {
+  ans <- 1
+  rows <- CountRow(p)
+  for (i in 1:rows)
+    ans <- ans * sum(ExtractW2Area(p, i))
+  return(ans)
+}

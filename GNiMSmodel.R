@@ -13,7 +13,8 @@ tab3_freq <- c(248, 36, 5, 10,
 GNiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   GNiMS_0Sum_Constr <- c(sum(p) - 1)
-  delta <- sum(ExtractW1Area(p, 1)) / sum(ExtractW2Area(p, 1))
+  #delta <- sum(ExtractW1Area(p, 4)) / (sum(ExtractW2Area(p, 4)))
+  delta <- SumAllW1Area(p) / (SumAllW2Area(p))
   numerator <- sum(ExtractW1Area(p, 2)) / sum(ExtractW2Area(p, 2))
   phai <- numerator / delta
   for (i in 1:rows) {
