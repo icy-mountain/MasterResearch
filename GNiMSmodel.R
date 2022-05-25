@@ -13,23 +13,22 @@ tab3_freq <- c(248, 36, 5, 10,
 GNiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   GNiMS_0Sum_Constr <- c(sum(p) - 1)
-  #delta <- sum(ExtractW1Area(p, 4)) / (sum(ExtractW2Area(p, 4)))
-  delta <- SumAllW1Area(p) / (SumAllW2Area(p))
+  delta <- sum(ExtractW1Area(p, 1)) / (sum(ExtractW2Area(p, 1)))
   numerator <- sum(ExtractW1Area(p, 2)) / sum(ExtractW2Area(p, 2))
-  phai <- numerator / delta
-  for (i in 1:rows) {
+  phi <- numerator / delta
+  for (i in 3:rows) {
     W1 <- sum(ExtractW1Area(p, i))
     W2 <- sum(ExtractW2Area(p, i))
     GNiMS_0Sum_Constr <- append(GNiMS_0Sum_Constr, 
-                                W1 - delta * phai^(i-1) * W2)
+                                W1 - delta * phi^(i-1) * W2)
   }
   return (GNiMS_0Sum_Constr)
 }
 GNiMSModel <- function(freq) {
-  p0 <- freq / sum(freq)
+  p0 <- rep(1/length(freq), length(freq))
   lowerBound <- rep(0, length(freq))
   rows <- CountRow(freq)
-  eqB <- rep(0, rows + 1)
+  eqB <- rep(0, rows - 1)
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = GNiMSConstrFunc, eqB = eqB,
                        LB = lowerBound, freq = freq)
   solnpResult$df <- rows - 2
@@ -40,8 +39,8 @@ DisplayResult <- function(freq) {
   phat <- result$pars
   delta <- sum(ExtractW1Area(phat, 1)) / sum(ExtractW2Area(phat, 1))
   numerator <- sum(ExtractW1Area(phat, 2)) / sum(ExtractW2Area(phat, 2)) 
-  phai <- numerator / delta
-  result$modelParams <- c(delta, phai)
+  phi <- numerator / delta
+  result$modelParams <- c(delta, phi)
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
   result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)

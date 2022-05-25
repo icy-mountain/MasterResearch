@@ -10,7 +10,6 @@ tab3_freq <- c(248, 36, 5, 10,
                36, 49, 23, 15,
                4, 11, 13, 9,
                1, 1, 1, 9)
-### "..." is solution of nsolnp bug
 NiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   NiMS_0Sum_Constr <- c(sum(p) - 1)
