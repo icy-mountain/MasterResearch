@@ -10,46 +10,37 @@ tab3_freq <- c(248, 36, 5, 10,
                36, 49, 23, 15,
                4, 11, 13, 9,
                1, 1, 1, 9)
-GNiMSConstrFunc <- function(p, delta, phai, ...) {
+GNiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   GNiMS_0Sum_Constr <- c(sum(p) - 1)
-  for (i in 1:rows) {
-    W1 <- sum(CalcW1Area(p, i))
-    W2 <- sum(CalcW2Area(p, i))
+  delta <- sum(ExtractW1Area(p, 1)) / (sum(ExtractW2Area(p, 1)))
+  numerator <- sum(ExtractW1Area(p, 2)) / sum(ExtractW2Area(p, 2))
+  phi <- numerator / delta
+  for (i in 3:rows) {
+    W1 <- sum(ExtractW1Area(p, i))
+    W2 <- sum(ExtractW2Area(p, i))
     GNiMS_0Sum_Constr <- append(GNiMS_0Sum_Constr, 
-                                W1 - delta * phai^(i-1) * W2)
+                                W1 - delta * phi^(i-1) * W2)
   }
   return (GNiMS_0Sum_Constr)
 }
-GNiMSModel <- function(delta, phai, freq) {
+GNiMSModel <- function(freq) {
   p0 <- rep(1/length(freq), length(freq))
   lowerBound <- rep(0, length(freq))
   rows <- CountRow(freq)
-  eqB <- rep(0, rows + 1)
+  eqB <- rep(0, rows - 1)
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = GNiMSConstrFunc, eqB = eqB,
-                       LB = lowerBound, freq = freq, delta = delta,  phai = phai)
+                       LB = lowerBound, freq = freq)
   solnpResult$df <- rows - 2
   return(solnpResult)
 }
-forDeltaPhaiOptim <- function(params, freq, output=FALSE) {
-  delta <- params[[1]]
-  phai  <- params[[2]]
-  if (output == TRUE)
-    solnpResult <- GNiMSModel(delta, phai, freq)
-  if (output == FALSE) {
-    sink(nullfile())
-    solnpResult <- GNiMSModel(delta, phai, freq)
-    sink()
-  }
-  optimizedFuncValue <- solnpResult$value[length(solnpResult$value)]
-  return(optimizedFuncValue)
-}
-DisplayResult <- function(freq) {
-  optimValues <- optim(c(1,1), forDeltaPhaiOptim , freq = freq)
-  optimDelta <- optimValues$par[[1]]
-  optimPhai <- optimValues$par[[2]]
-  result <- GNiMSModel(optimDelta, optimPhai, freq)
-  result$modelParams <- optimValues$par
+DisplayGNiMSResult <- function(freq) {
+  result <- GNiMSModel(freq)
+  pHat <- result$pars
+  delta <- sum(ExtractW1Area(pHat, 1)) / sum(ExtractW2Area(pHat, 1))
+  numerator <- sum(ExtractW1Area(pHat, 2)) / sum(ExtractW2Area(pHat, 2)) 
+  phi <- numerator / delta
+  result$modelParams <- c(delta, phi)
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
   result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)
@@ -60,7 +51,7 @@ DisplayResult <- function(freq) {
   print(sprintf("AICp:%s", result$AICp))
   return(result)
 }
-system.time(GNiMS_tab1_result <- DisplayResult(tab1_freq))
-system.time(GNiMS_tab3_result <- DisplayResult(tab3_freq))
+system.time(GNiMS_tab1_result <- DisplayGNiMSResult(tab1_freq))
+system.time(GNiMS_tab3_result <- DisplayGNiMSResult(tab3_freq))
 GNiMS_tab1_result$modelParams
 GNiMS_tab3_result$modelParams

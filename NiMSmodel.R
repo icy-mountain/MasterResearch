@@ -10,13 +10,12 @@ tab3_freq <- c(248, 36, 5, 10,
                36, 49, 23, 15,
                4, 11, 13, 9,
                1, 1, 1, 9)
-### "..." is solution of nsolnp bug
 NiMSConstrFunc <- function(p, ...) {
   rows <- CountRow(p)
   NiMS_0Sum_Constr <- c(sum(p) - 1)
   for (i in 1:rows) {
-    W1 <- sum(CalcW1Area(p, i))
-    W2 <- sum(CalcW2Area(p, i))
+    W1 <- sum(ExtractW1Area(p, i))
+    W2 <- sum(ExtractW2Area(p, i))
     NiMS_0Sum_Constr <- append(NiMS_0Sum_Constr, W1 - W2)
   }
   return (NiMS_0Sum_Constr)
@@ -31,7 +30,7 @@ NiMSModel <- function(freq) {
   solnpResult$df <- rows
   return(solnpResult)
 }
-DisplayResult <- function(freq) {
+DisplayNiMSResult <- function(freq) {
   result <- NiMSModel(freq = freq)
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
@@ -43,5 +42,5 @@ DisplayResult <- function(freq) {
   print(sprintf("AICp:%s", result$AICp))
   return(result)
 }
-NiMS_tab1_result <- DisplayResult(tab1_freq)
-NiMS_tab3_result <- DisplayResult(tab3_freq)
+NiMS_tab1_result <- DisplayNiMSResult(tab1_freq)
+NiMS_tab3_result <- DisplayNiMSResult(tab3_freq)
