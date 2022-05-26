@@ -31,10 +31,10 @@ ENiMSModel <- function(freq) {
   solnpResult$df <- rows - 1
   return(solnpResult)
 }
-DisplayResult <- function(freq) {
+DisplayGNiMSResult <- function(freq) {
   result <- ENiMSModel(freq = freq)
-  phat <- result$pars
-  delta <- sum(ExtractW1Area(phat, 1)) / sum(ExtractW2Area(phat, 1))
+  pHat <- result$pars
+  delta <- sum(ExtractW1Area(pHat, 1)) / sum(ExtractW2Area(pHat, 1))
   result$modelParams <- delta
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
@@ -46,7 +46,7 @@ DisplayResult <- function(freq) {
   print(sprintf("AICp:%s", result$AICp))
   return(result)
 }
-system.time(ENiMS_tab1_result <- DisplayResult(tab1_freq))
-system.time(ENiMS_tab3_result <- DisplayResult(tab3_freq))
+system.time(ENiMS_tab1_result <- DisplayGNiMSResult(tab1_freq))
+system.time(ENiMS_tab3_result <- DisplayGNiMSResult(tab3_freq))
 ENiMS_tab1_result$modelParams
 ENiMS_tab3_result$modelParams

@@ -2,9 +2,6 @@ CountRow <- function(freq) {
   r <- ifelse(floor(sqrt(length(freq))) < ceiling(sqrt(length(freq))), -1, sqrt(length(freq)))
   return(r)
 }
-CalcLenVec <- function(vec) {
-  return(length(vec))
-}
 Idx2RowCol <- function(idx, rows) {
   return(c((idx-1) %/% rows+1, (idx-1) %% rows+1))
 }

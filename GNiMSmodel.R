@@ -34,11 +34,11 @@ GNiMSModel <- function(freq) {
   solnpResult$df <- rows - 2
   return(solnpResult)
 }
-DisplayResult <- function(freq) {
+DisplayGNiMSResult <- function(freq) {
   result <- GNiMSModel(freq)
-  phat <- result$pars
-  delta <- sum(ExtractW1Area(phat, 1)) / sum(ExtractW2Area(phat, 1))
-  numerator <- sum(ExtractW1Area(phat, 2)) / sum(ExtractW2Area(phat, 2)) 
+  pHat <- result$pars
+  delta <- sum(ExtractW1Area(pHat, 1)) / sum(ExtractW2Area(pHat, 1))
+  numerator <- sum(ExtractW1Area(pHat, 2)) / sum(ExtractW2Area(pHat, 2)) 
   phi <- numerator / delta
   result$modelParams <- c(delta, phi)
   mhat <- result$pars * sum(freq)
@@ -51,7 +51,7 @@ DisplayResult <- function(freq) {
   print(sprintf("AICp:%s", result$AICp))
   return(result)
 }
-system.time(GNiMS_tab1_result <- DisplayResult(tab1_freq))
-system.time(GNiMS_tab3_result <- DisplayResult(tab3_freq))
+system.time(GNiMS_tab1_result <- DisplayGNiMSResult(tab1_freq))
+system.time(GNiMS_tab3_result <- DisplayGNiMSResult(tab3_freq))
 GNiMS_tab1_result$modelParams
 GNiMS_tab3_result$modelParams

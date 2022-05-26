@@ -30,7 +30,7 @@ NiMSModel <- function(freq) {
   solnpResult$df <- rows
   return(solnpResult)
 }
-DisplayResult <- function(freq) {
+DisplayNiMSResult <- function(freq) {
   result <- NiMSModel(freq = freq)
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
@@ -42,5 +42,5 @@ DisplayResult <- function(freq) {
   print(sprintf("AICp:%s", result$AICp))
   return(result)
 }
-NiMS_tab1_result <- DisplayResult(tab1_freq)
-NiMS_tab3_result <- DisplayResult(tab3_freq)
+NiMS_tab1_result <- DisplayNiMSResult(tab1_freq)
+NiMS_tab3_result <- DisplayNiMSResult(tab3_freq)
