@@ -22,7 +22,7 @@ ENiMSConstrFunc <- function(p, delta, ...) {
   return (ENiMS_0Sum_Constr)
 }
 ENiMSModel <- function(delta, freq) {
-  p0 <- rep(1/length(freq), length(freq))
+  p0 <- rep(1, length(freq))
   lowerBound <- rep(0, length(freq))
   rows <- CountRow(freq)
   eqB <- rep(0, rows + 1)
