@@ -5,6 +5,10 @@ CountRow <- function(freq) {
 Idx2RowCol <- function(idx, rows) {
   return(c((idx-1) %/% rows+1, (idx-1) %% rows+1))
 }
+RowCol2Idx <- function(vec, row, col) {
+  r <- CountRow(vec)
+  return((row - 1) * r + col)
+}
 removeZero <- function(freq) {
   return(freq[freq > 0])
 }
@@ -45,17 +49,43 @@ TransoseVec <- function(vec) {
   }
   return(transposed)
 }
-Calc2_pi_c <- function(p) {
+Calc2_p_c <- function(p) {
   p_T <- TransoseVec(p)
   pc <- 2 * p / (p + p_T)
   return(pc)
 }
-CalcF_2_pi_c <- function(p, f_formula, name) {
-  pi_c <- Calc2_pi_c(p)
+CalcF_2_p_c <- function(p, f_formula, name) {
+  pi_c <- Calc2_p_c(p)
   deriv_func <- deriv(f_formula, c(name), func = TRUE)
   evalated <- deriv_func(pi_c)
   F_2_pi_c <- attributes(evalated)$gradient
   return(F_2_pi_c)
+}
+Calc2_pij_c <- function(p, i, j) {
+  r <- CountRow(p)
+  pij <- p[[RowCol2Idx(p, i, j)]]
+  pji <- p[[RowCol2Idx(p, j, i)]]
+  return(2 * pij / (pij + pji))
+}
+CalcDenominator <- function(score, n) {
+  ans <- 1
+  for (i in 1:(n-1)) {
+    ans <- ans * (score[[n]] - score[[i]])
+  }
+  return(ans)
+}
+CalcNumerator <- function(score, alpha, n) {
+  ans <- 0
+  i <- 1
+  while(i <= (n-2)) {
+    mul <- 1
+    for (j in 1:i) {
+      mul <- mul * (score[[n]] - score[[j]])
+    }
+    ans <- ans + mul * alpha[[i]]
+    i <- i + 1
+  }
+  return(ans)
 }
 CalcG2 <- function(freq, mhat) {
   return(2 * sum(freq * (log(freq) - log(mhat))))
