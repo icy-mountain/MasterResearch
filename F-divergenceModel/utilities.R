@@ -35,6 +35,12 @@ PrintDiagonal <- function(vec) {
     print(vec[[idx]])
   }
 }
+Calc2_pij_c <- function(p, i, j) {
+  r <- CountRow(p)
+  pij <- p[[RowCol2Idx(p, i, j)]]
+  pji <- p[[RowCol2Idx(p, j, i)]]
+  return(2 * pij / (pij + pji))
+}
 TransoseVec <- function(vec) {
   r <- CountRow(vec)
   transposed <- rep(1, length(vec))
@@ -61,12 +67,6 @@ CalcF_2_p_c <- function(p, f_formula, name) {
   F_2_pi_c <- attributes(evalated)$gradient
   return(F_2_pi_c)
 }
-Calc2_pij_c <- function(p, i, j) {
-  r <- CountRow(p)
-  pij <- p[[RowCol2Idx(p, i, j)]]
-  pji <- p[[RowCol2Idx(p, j, i)]]
-  return(2 * pij / (pij + pji))
-}
 CalcDenominator <- function(score, n) {
   ans <- 1
   for (i in 1:(n-1)) {
@@ -78,6 +78,8 @@ CalcNumerator <- function(score, alpha, n) {
   ans <- 0
   i <- 1
   while(i <= (n-2)) {
+    #print(sprintf("i:%s n:%s", i, n))
+    #print(sprintf("called!"))
     mul <- 1
     for (j in 1:i) {
       mul <- mul * (score[[n]] - score[[j]])
