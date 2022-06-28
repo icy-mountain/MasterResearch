@@ -89,6 +89,41 @@ CalcNumerator <- function(score, alpha, n) {
   }
   return(ans)
 }
+CalcAlpha <- function(F2pc, i, j, score, alphas) {
+  idxIJ <- RowCol2Idx(F2pc, i, j)
+  idxJI <- RowCol2Idx(F2pc, j, i)
+  num <- CalcNumerator(score, alphas, j)
+  den <- CalcDenominator(score, j)
+  ans <- (F2pc[[idxIJ]] - F2pc[[idxJI]] + num) / (-1 * den)
+  return(ans)
+}
+CalcAllAlphas <- function(F2pc, score, k) {
+  alphas <- rep(0, k)
+  for (i in 1:k) {
+    alphas[[i]] <- CalcAlpha(F2pc, 1, i+1, score, alphas)
+  }
+  return(alphas)
+}
+CalcAlphaScoreSum <- function(alphas, score, k, i, j) {
+  alpha_score_sum <- 0
+  for (h in 1:k) {
+    score_sum <- 0
+    score_mul <- 1
+    # left
+    for (g in 1:h) {
+      score_mul <- score_mul * (score[[i]] - score[[g]])
+    }
+    score_sum <- score_sum + score_mul
+    score_mul <- 1
+    # right
+    for (g in 1:h) {
+      score_mul <- score_mul * (score[[j]] - score[[g]])
+    }
+    score_sum <- score_sum - score_mul
+    alpha_score_sum <- alpha_score_sum + score_sum * alphas[[h]]
+  }
+  return(alpha_score_sum)
+}
 CalcG2 <- function(freq, mhat) {
   return(2 * sum(freq * (log(freq) - log(mhat))))
 }

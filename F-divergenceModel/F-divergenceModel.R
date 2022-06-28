@@ -2,36 +2,67 @@ rm(list = ls(all.names = TRUE))
 install.packages('Rsolnp')
 library(Rsolnp)
 source("./utilities.R")
-# hoge ####
 tab1_freq <-
   c(1520, 266, 124, 66,
     234,  1512,432, 78,
     117,  362, 1772,205,
     36,   82,  179, 492)
-tab1_p <- tab1_freq / sum(tab1_freq)
-# df: r * (r-1) / 2 - k
-r <- CountRow(tab1_freq)
-f <- ~ (1 - t)^2
+tab2_freq <-
+  c(50, 45, 8, 18,  8,
+    28, 174,84,154, 55,
+    11, 78, 110,223,96,
+    14, 150,185,714, 447,
+    3,  42, 72, 320, 411)
+# solnp section####
+ASkfConstrFunc <- function(p, ft, name, score, k, ...) {
+  rows <- CountRow(p)
+  ASkf_0Sum_Constr <- c(sum(p) - 1)
+  F2pc <- CalcF_2_p_c(p, ft, name)
+  alphas <- CalcAllAlphas(F2pc, score, k)
+  for (i in 2:(rows-1)) {
+    for (j in (i+1):rows) {
+      alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
+      IdxIJ <- RowCol2Idx(p, i, j)
+      IdxJI <- RowCol2Idx(p, j, i)
+      ASkf_0Sum_Constr <- append(ASkf_0Sum_Constr,
+                                 F2pc[[IdxIJ]] - F2pc[[IdxJI]] - alpha_score_sum)
+    }
+  }
+  return (ASkf_0Sum_Constr)
+}
+ASkfModel <- function(freq, ft, name, score, k) {
+  p0 <- rep(1/length(freq), length(freq))
+  lowerBound <- rep(0, length(freq))
+  rows <- CountRow(freq)
+  constr_num <- rows * (rows - 1) / 2 - (rows - 1)
+  eqB <- rep(0, constr_num + 1)
+  solnpResult <- solnp(p0, fun = objectFunc, eqfun = ASkfConstrFunc, eqB = eqB,
+                       LB = lowerBound, freq = freq, ft = ft, name = name,
+                       score = score, k = k)
+  solnpResult$df <- rows * (rows-1) / 2 - k
+  return(solnpResult)
+}
+DisplayASkfResult <- function(freq, ft, name, score, k) {
+  result <- ASkfModel(freq, ft, name, score, k)
+  pHat <- result$pars
+  mhat <- result$pars * sum(freq)
+  result$G2 <- CalcG2(freq, mhat)
+  result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)
+  print(sprintf("k:%s", k))
+  print(sprintf("f:%s", format(ft)))
+  print(sprintf("df:%s", result$df))
+  print(sprintf("G2:%s", result$G2))
+  print(sprintf("pValue:%s", result$pValue))
+  return(result)
+}
+freq <- tab2_freq
+r <- CountRow(freq)
+ft <- ~ (1 - t)^2
 name <- "t"
 score <- 1:r
-Calc2_pij_c(tab1_freq, 1, 3)
-F2pc <- CalcF_2_p_c(tab1_p, f, name)
-F2pc
-alphas <- rep(0, r-1)
-# i=1 j=2 score=1234 
-idxIJ <- RowCol2Idx(F2pc, 1, 2)
-idxJI <- RowCol2Idx(F2pc, 2, 1)
-alphas[[1]] <- (F2pc[[idxIJ]] + F2pc[[idxJI]] + CalcNumerator(score, alphas, 2)) /
-            CalcDenominator(score, 2)
+k <- 4
+result <- DisplayASkfResult(freq, ft, name, score, k)
+result$pars * sum(freq)
+F2pc <- CalcF_2_p_c(freq, ft, name)
+alphas <- CalcAllAlphas(F2pc, score, k)
 alphas
-CalcAlpha <- function(F2pc, i, j, score, alphas) {
-  idxIJ <- RowCol2Idx(F2pc, i, j)
-  idxJI <- RowCol2Idx(F2pc, j, i)
-  num <- CalcNumerator(score, alphas, j)
-  den <- CalcDenominator(score, j)
-  ans <- (F2pc[[idxIJ]] + F2pc[[idxJI]] + num) / den
-  print(sprintf("ij:%s ji:%s", F2pc[[idxIJ]], F2pc[[idxJI]]))
-  print(sprintf("num:%s  den:%s", num, den))
-  return(ans)
-}
-alphas[[3]] <-  CalcAlpha(F2pc, 1, 4, score, alphas)
