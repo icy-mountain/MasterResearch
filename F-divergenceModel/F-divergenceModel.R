@@ -17,13 +17,13 @@ tab2_freq <-
 ASkfConstrFunc <- function(p, ft, name, score, k, ...) {
   rows <- CountRow(p)
   ASkf_0Sum_Constr <- c(sum(p) - 1)
-  F2pc <- CalcF_2_p_c(p, ft, name)
+  F2pc <- CalcF2pc(p, ft, name)
   alphas <- CalcAllAlphas(F2pc, score, k)
   for (i in 2:(rows-1)) {
     for (j in (i+1):rows) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
-      IdxIJ <- RowCol2Idx(p, i, j)
-      IdxJI <- RowCol2Idx(p, j, i)
+      IdxIJ <- RowColToIdx(p, i, j)
+      IdxJI <- RowColToIdx(p, j, i)
       ASkf_0Sum_Constr <- append(ASkf_0Sum_Constr,
                                  F2pc[[IdxIJ]] - F2pc[[IdxJI]] - alpha_score_sum)
     }
@@ -55,12 +55,13 @@ DisplayASkfResult <- function(freq, ft, name, score, k) {
   print(sprintf("pValue:%s", result$pValue))
   return(result)
 }
-freq <- tab2_freq
+# Operation check section####
+freq <- tab1_freq
 r <- CountRow(freq)
 ft <- ~ (1 - t)^2
 name <- "t"
 score <- 1:r
-k <- 4
+k <- 3
 result <- DisplayASkfResult(freq, ft, name, score, k)
 result$pars * sum(freq)
 F2pc <- CalcF_2_p_c(freq, ft, name)
