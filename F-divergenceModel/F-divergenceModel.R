@@ -56,12 +56,12 @@ DisplayASkfResult <- function(freq, ft, name, score, k) {
   return(result)
 }
 # Operation check section####
-freq <- tab1_freq
+freq <- tab2_freq
 r <- CountRow(freq)
 ft <- ~ (1 - t)^2
 name <- "t"
 score <- 1:r
-k <- 3
+k <- r-1
 result <- DisplayASkfResult(freq, ft, name, score, k)
 result$pars * sum(freq)
 F2pc <- CalcF_2_p_c(freq, ft, name)
