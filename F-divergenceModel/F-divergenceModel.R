@@ -18,7 +18,17 @@ ASkfConstrFunc <- function(p, ft, name, score, k, ...) {
   rows <- CountRow(p)
   ASkf_0Sum_Constr <- c(sum(p) - 1)
   F2pc <- CalcF2pc(p, ft, name)
-  alphas <- CalcAllAlphas(F2pc, score, k)
+  alphas <- CalcAllAlphas(F2pc, score, k) #hosii alphaの標準偏差欲しい　標準誤差が欲しい
+  if (k < r-1) {
+    for (j in (k+2):rows) {
+      i <- 1
+      alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
+      IdxIJ <- RowColToIdx(p, i, j)
+      IdxJI <- RowColToIdx(p, j, i)
+      ASkf_0Sum_Constr <- append(ASkf_0Sum_Constr,
+                                 F2pc[[IdxIJ]] - F2pc[[IdxJI]] - alpha_score_sum)
+    }
+  }
   for (i in 2:(rows-1)) {
     for (j in (i+1):rows) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
@@ -34,7 +44,7 @@ ASkfModel <- function(freq, ft, name, score, k) {
   p0 <- rep(1/length(freq), length(freq))
   lowerBound <- rep(0, length(freq))
   rows <- CountRow(freq)
-  constr_num <- rows * (rows - 1) / 2 - (rows - 1)
+  constr_num <- rows * (rows - 1) / 2 - k
   eqB <- rep(0, constr_num + 1)
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = ASkfConstrFunc, eqB = eqB,
                        LB = lowerBound, freq = freq, ft = ft, name = name,
@@ -61,9 +71,10 @@ r <- CountRow(freq)
 ft <- ~ (1 - t)^2
 name <- "t"
 score <- 1:r
-k <- r-1
+k <- 4
 result <- DisplayASkfResult(freq, ft, name, score, k)
 result$pars * sum(freq)
-F2pc <- CalcF_2_p_c(freq, ft, name)
+
+F2pc <- CalcF2pc(freq, ft, name)
 alphas <- CalcAllAlphas(F2pc, score, k)
 alphas
