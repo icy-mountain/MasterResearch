@@ -1,5 +1,5 @@
 rm(list = ls(all.names = TRUE))
-install.packages('Rsolnp')
+#install.packages('Rsolnp')
 library(Rsolnp)
 source("./utilities.R")
 tab1_freq <-
@@ -18,13 +18,12 @@ ASkfConstrFunc <- function(p, ft, name, score, k, ...) {
   rows <- CountRow(p)
   ASkf_0Sum_Constr <- c(sum(p) - 1)
   F2pc <- CalcF2pc(p, ft, name)
-  alphas <- CalcAllAlphas(F2pc, score, k) #hosii alphaの標準偏差欲しい　標準誤差が欲しい
+  alphas <- CalcAllAlphas(F2pc, score, k)
   if (k < r-1) {
     for (j in (k+2):rows) {
-      i <- 1
-      alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
-      IdxIJ <- RowColToIdx(p, i, j)
-      IdxJI <- RowColToIdx(p, j, i)
+      alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, 1, j)
+      IdxIJ <- RowColToIdx(p, 1, j)
+      IdxJI <- RowColToIdx(p, j, 1)
       ASkf_0Sum_Constr <- append(ASkf_0Sum_Constr,
                                  F2pc[[IdxIJ]] - F2pc[[IdxJI]] - alpha_score_sum)
     }
@@ -54,27 +53,37 @@ ASkfModel <- function(freq, ft, name, score, k) {
 }
 DisplayASkfResult <- function(freq, ft, name, score, k) {
   result <- ASkfModel(freq, ft, name, score, k)
+  F2pc <- CalcF2pc(result$pars, ft, name)
+  alphas <- CalcAllAlphas(F2pc, score, k)
   pHat <- result$pars
   mhat <- result$pars * sum(freq)
   result$G2 <- CalcG2(freq, mhat)
   result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)
+  result$alphas <- alphas
   print(sprintf("k:%s", k))
   print(sprintf("f:%s", format(ft)))
   print(sprintf("df:%s", result$df))
   print(sprintf("G2:%s", result$G2))
   print(sprintf("pValue:%s", result$pValue))
+  for (i in 1:k) {
+    print(sprintf("alpha_%d:%f", i, alphas[[i]]))
+  }
   return(result)
 }
 # Operation check section####
-freq <- tab2_freq
+freq <- tab1_freq
 r <- CountRow(freq)
 ft <- ~ (1 - t)^2
 name <- "t"
 score <- 1:r
-k <- 4
+k <- r-1
 result <- DisplayASkfResult(freq, ft, name, score, k)
 result$pars * sum(freq)
+result$alphas
 
-F2pc <- CalcF2pc(freq, ft, name)
-alphas <- CalcAllAlphas(F2pc, score, k)
-alphas
+# Variance check section####
+hess <- result$hessian 
+invHess <- solve(hess)
+F2Sigmac <- CalcF2pc(invHess, ft, name)
+alphasSigma <- CalcAllAlphas(F2Sigmac, score, k)
+alphasSigma
