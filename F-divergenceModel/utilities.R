@@ -67,6 +67,13 @@ CalcF2pc <- function(p, f_formula, name) {
   F_2_pi_c <- attributes(evalated)$gradient
   return(F_2_pi_c)
 }
+CalcDerivF2pc <- function(p, f_formula, name) {
+  pi_c <- Calc2pc(p)
+  deriv_func <- deriv(f_formula, c(name), func = TRUE, hessian = TRUE)
+  evalated <- deriv_func(pi_c)
+  derivF_2_pi_c <- attributes(evalated)$hessian
+  return(derivF_2_pi_c)
+}
 CalcDenominator <- function(score, n) {
   ans <- 1
   for (i in 1:(n-1)) {
