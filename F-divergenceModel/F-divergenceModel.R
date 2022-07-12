@@ -1,7 +1,10 @@
 rm(list = ls(all.names = TRUE))
 #install.packages('Rsolnp')
+#install.packages('mosaicCalc') #ummmmm....
 library(Rsolnp)
+library(mosaicCalc)
 source("./utilities.R")
+
 tab1_freq <-
   c(1520, 266, 124, 66,
     234,  1512,432, 78,
@@ -83,7 +86,15 @@ result$alphas
 
 # Variance check section####
 hess <- result$hessian 
-invHess <- solve(hess)
-F2Sigmac <- CalcF2pc(invHess, ft, name)
-alphasSigma <- CalcAllAlphas(F2Sigmac, score, k)
-alphasSigma
+invHess <- solve(hess) / sum(freq)
+f_formula <- (1 - t)^2 ~ t
+funcF <- makeFun(D(f_formula))
+p <- result$pars
+alphas_dP <-  CalcDerivAllAlphas(funcF, p, score, k)
+ans <- MakeAlpha_dPMatrix(alphas_dP, r, k)
+ans
+alphaCovp <- ans %*% invHess %*% t(ans)
+alphaCovp
+interval <- 1.96 * alphaCovp
+result$alphas + interval[2:r]
+result$alphas - interval[2:r]

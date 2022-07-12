@@ -123,6 +123,46 @@ CalcAlphaScoreSum <- function(alphas, score, k, i, j) {
   }
   return(alpha_score_sum)
 }
+CalcDerivAlpha <- function(funcF, p, i, j, score, derivAlphas) {
+  pij <- p[[RowColToIdx(p, i, j)]]
+  pji <- p[[RowColToIdx(p, j, i)]]
+  num_dPij <- CalcNumerator(score, derivAlphas[["dPij"]], j)
+  num_dPji <- CalcNumerator(score, derivAlphas[["dPji"]], j)
+  den <- CalcDenominator(score, j)
+  exprAlpha_dPij <- (funcF(2 * pij / (pij + pji)) -
+                       funcF(2 * pji / (pij + pji)) +
+                       num_dPij) /
+    (-1 * den) ~ pij
+  exprAlpha_dPji <- (funcF(2 * pij / (pij + pji)) -
+                       funcF(2 * pji / (pij + pji)) +
+                       num_dPji) /
+    (-1 * den) ~ pji
+  alpha_dPij <- D(exprAlpha_dPij, pji = pji, num_dPij = num_dPij, den = den)
+  alpha_dPji <- D(exprAlpha_dPji, pij = pij, num_dPji = num_dPji, den = den)
+  derivAlphas[["dPij"]] <- append(derivAlphas[["dPij"]], alpha_dPij(pij = pij))
+  derivAlphas[["dPji"]] <- append(derivAlphas[["dPji"]], alpha_dPji(pji = pji))
+  return(derivAlphas)
+}
+CalcDerivAllAlphas <- function(funcF, p, score, k) {
+  derivAlphas <- vector("list", length = 2)
+  names(derivAlphas) <- c("dPij","dPji")
+  for (i in 1:k) {
+    derivAlphas <- CalcDerivAlpha(funcF, p, 1, i+1, score, derivAlphas)
+  }
+  return(derivAlphas)
+}
+MakeAlpha_dPMatrix <- function(alphas_dP, r, k){
+  row <- r * (r - 1) / 2 - k + 1
+  col <- r * r
+  size <- length(alphas_dP[["dPij"]])
+  ans <- rep(0, row * col)
+  dim(ans) <- c(row, col)
+  ans[1,][2:(size+1)] <- alphas_dP[["dPij"]]
+  for (idx in 2:row){
+    ans[idx,][1] <- alphas_dP[["dPji"]][[idx-1]]
+  }
+  return(ans)
+}
 CalcG2 <- function(freq, mhat) {
   return(2 * sum(freq * (log(freq) - log(mhat))))
 }
