@@ -60,15 +60,17 @@ Calc2pc <- function(p) {
   pc <- 2 * p / (p + p_T)
   return(pc)
 }
-CalcF2pc <- function(p, f_formula, name) {
+CalcF2pc <- function(p, ft, name) {
   pi_c <- Calc2pc(p)
+  f_formula <- as.formula(paste("t ~ " ,ft))
   deriv_func <- deriv(f_formula, c(name), func = TRUE)
   evalated <- deriv_func(pi_c)
   F_2_pi_c <- attributes(evalated)$gradient
   return(F_2_pi_c)
 }
-CalcDerivF2pc <- function(p, f_formula, name) {
+CalcDerivF2pc <- function(p, ft, name) {
   pi_c <- Calc2pc(p)
+  f_formula <- as.formula(paste("t ~ " ,ft))
   deriv_func <- deriv(f_formula, c(name), func = TRUE, hessian = TRUE)
   evalated <- deriv_func(pi_c)
   derivF_2_pi_c <- attributes(evalated)$hessian
@@ -131,12 +133,12 @@ CalcDerivAlpha <- function(funcF, p, i, j, score, derivAlphas) {
   den <- CalcDenominator(score, j)
   exprAlpha_dPij <- (funcF(2 * pij / (pij + pji)) -
                        funcF(2 * pji / (pij + pji)) +
-                       num_dPij) /
-    (-1 * den) ~ pij
+                       num_dPij) / 
+                    (-1 * den) ~ pij
   exprAlpha_dPji <- (funcF(2 * pij / (pij + pji)) -
                        funcF(2 * pji / (pij + pji)) +
                        num_dPji) /
-    (-1 * den) ~ pji
+                    (-1 * den) ~ pji
   alpha_dPij <- D(exprAlpha_dPij, pji = pji, num_dPij = num_dPij, den = den)
   alpha_dPji <- D(exprAlpha_dPji, pij = pij, num_dPji = num_dPji, den = den)
   derivAlphas[["dPij"]] <- append(derivAlphas[["dPij"]], alpha_dPij(pij = pij))
@@ -152,14 +154,16 @@ CalcDerivAllAlphas <- function(funcF, p, score, k) {
   return(derivAlphas)
 }
 MakeAlpha_dPMatrix <- function(alphas_dP, r, k){
-  row <- r * (r - 1) / 2 - k + 1
+  row <- k
   col <- r * r
-  size <- length(alphas_dP[["dPij"]])
   ans <- rep(0, row * col)
   dim(ans) <- c(row, col)
-  ans[1,][2:(size+1)] <- alphas_dP[["dPij"]]
-  for (idx in 2:row){
-    ans[idx,][1] <- alphas_dP[["dPji"]][[idx-1]]
+  size <- length(alphas_dP[["dPij"]])
+  for (idx in 1:size) {
+    flattenIdx <- RowColToIdx(1:(r*r), 1, idx + 1)
+    ans[idx,][flattenIdx] <- alphas_dP[["dPij"]][[idx]]
+    flattenIdx <- RowColToIdx(1:(r*r), idx + 1, 1)
+    ans[idx,][flattenIdx] <- alphas_dP[["dPji"]][[idx]]
   }
   return(ans)
 }

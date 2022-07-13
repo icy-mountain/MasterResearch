@@ -4,7 +4,7 @@ rm(list = ls(all.names = TRUE))
 library(Rsolnp)
 library(mosaicCalc)
 source("./utilities.R")
-
+#c(1520, 266, 124, 66, 234, 1512,432, 78, 117,  362, 1772, 205, 36,   82,  179, 492)
 tab1_freq <-
   c(1520, 266, 124, 66,
     234,  1512,432, 78,
@@ -22,7 +22,7 @@ ASkfConstrFunc <- function(p, ft, name, score, k, ...) {
   ASkf_0Sum_Constr <- c(sum(p) - 1)
   F2pc <- CalcF2pc(p, ft, name)
   alphas <- CalcAllAlphas(F2pc, score, k)
-  if (k < r-1) {
+  if (k < rows-1) {
     for (j in (k+2):rows) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, 1, j)
       IdxIJ <- RowColToIdx(p, 1, j)
@@ -51,7 +51,7 @@ ASkfModel <- function(freq, ft, name, score, k) {
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = ASkfConstrFunc, eqB = eqB,
                        LB = lowerBound, freq = freq, ft = ft, name = name,
                        score = score, k = k)
-  solnpResult$df <- rows * (rows-1) / 2 - k
+  solnpResult$df <- rows * (rows - 1) / 2 - k
   return(solnpResult)
 }
 DisplayASkfResult <- function(freq, ft, name, score, k) {
@@ -74,27 +74,12 @@ DisplayASkfResult <- function(freq, ft, name, score, k) {
   return(result)
 }
 # Operation check section####
-freq <- tab1_freq
-r <- CountRow(freq)
-ft <- ~ (1 - t)^2
-name <- "t"
-score <- 1:r
-k <- r-1
-result <- DisplayASkfResult(freq, ft, name, score, k)
-result$pars * sum(freq)
-result$alphas
-
-# Variance check section####
-hess <- result$hessian 
-invHess <- solve(hess) / sum(freq)
-f_formula <- (1 - t)^2 ~ t
-funcF <- makeFun(D(f_formula))
-p <- result$pars
-alphas_dP <-  CalcDerivAllAlphas(funcF, p, score, k)
-ans <- MakeAlpha_dPMatrix(alphas_dP, r, k)
-ans
-alphaCovp <- ans %*% invHess %*% t(ans)
-alphaCovp
-interval <- 1.96 * alphaCovp
-result$alphas + interval[2:r]
-result$alphas - interval[2:r]
+# freq <- tab2_freq
+# r <- CountRow(freq)
+# ft <- "(1 - t)^2"
+# name <- "t"
+# score <- 1:r
+# k <- r-2
+# result <- DisplayASkfResult(freq, ft, name, score, k)
+# result$pars * sum(freq)
+# result$alphas
