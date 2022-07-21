@@ -1,9 +1,7 @@
 rm(list = ls(all.names = TRUE))
 install.packages('Rsolnp')
-library(Rsolnp)
-install.packages('numDeriv')
-library(numDeriv)
 install.packages('mosaicCalc') #ummmmm....
+library(Rsolnp)
 library(mosaicCalc)
 source("./utilities.R")
 source("../utilities.R")
@@ -111,9 +109,9 @@ print_summary <- function(alphaCovp, ASkf, params) {
   cat("alphas:\n")
   print(ASkf$alphas)
   cat("alphas + interval:\n")
-  print(ASkf$alphas + interval[1:params$k])
+  print(ASkf$alphas + diag(interval))
   cat("alphas - interval:\n")
-  print(ASkf$alphas - interval[1:params$k])
+  print(ASkf$alphas - diag(interval))
 }
 compareCovp_ASkf_MPH <- function(params, ASkf, mph) {
   hess <- ASkf$hessian 
