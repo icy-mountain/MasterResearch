@@ -138,11 +138,9 @@ CalcCovp <- function(params, ASkf_result){
   #Z <- t(t(rep(1, length(y))))
   N <- sum(params$freq)
   m <- ASkf_result$pars * N
-  p <- ASkf_result$pars
   Dm <- diag(m)
   H <- num.deriv.fct(h.fct, m)
   HtDHinv <- solve(t(H) %*% (H*m))
-  HHtDHinv <- H %*% HtDHinv
   covResid <- (H*m) %*% HtDHinv %*% t(H*m)
   covp <- t(t((Dm - covResid - ((m) %*% t(m)) * 1/N) * 1/N) * 1/N)
   return(covp)
