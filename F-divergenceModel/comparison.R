@@ -135,19 +135,16 @@ num.deriv.fct <- function(f.fct,m) {
 }
 CalcCovp <- function(params, ASkf_result){
   y <- params$freq
-  Z <- t(t(rep(1, length(y))))
+  #Z <- t(t(rep(1, length(y))))
   N <- sum(params$freq)
   m <- ASkf_result$pars * N
-  #p <- m*c(1/Z %*% t(Z) %*% y)
   p <- ASkf_result$pars
-  Dm <- diag(c(m))
-  H <- num.deriv.fct(h.fct,m)
-  print(H)
-  HtDHinv <- solve(t(H) %*% (H*c(m)))
+  Dm <- diag(m)
+  H <- num.deriv.fct(h.fct, m)
+  HtDHinv <- solve(t(H) %*% (H*m))
   HHtDHinv <- H %*% HtDHinv
-  covresid <- (H*c(m)) %*% HtDHinv %*% t(H*c(m))
-  covm.unadj <- Dm - covresid
-  covp <- t(t((covm.unadj-((Z*c(m))%*%t(Z*c(m))) * c(1/N)) * c(1/N)) * c(1/N))
+  covResid <- (H*m) %*% HtDHinv %*% t(H*m)
+  covp <- t(t((Dm - covResid - ((m) %*% t(m)) * 1/N) * 1/N) * 1/N)
   return(covp)
 }
 compareCovp_ASkf_MPH <- function(params, ASkf, mph) {
