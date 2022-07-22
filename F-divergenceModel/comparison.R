@@ -113,17 +113,53 @@ print_summary <- function(alphaCovp, ASkf, params) {
   cat("alphas - interval:\n")
   print(ASkf$alphas - diag(interval))
 }
+h.fct <- function(m) {
+  p <- m / sum(params$freq)
+  #mat <- as.matrix(ASkfConstrFunc(p, params$ft, params$name, params$score, params$k))
+  mat <- as.matrix(mph_ASkfConstrFunc(p, params))
+  return(mat)
+}
+num.deriv.fct <- function(f.fct,m) {
+  eps <- (.Machine$double.eps)^(1/3)
+  d <- eps * m + eps  
+  lenm <- length(m)
+  E <- diag(c(d)) 
+  f1 <- f.fct(m+E[,1])
+  lenf <- length(f1)
+  Ft <- (f1-f.fct(m-E[,1]))/(2*d[1])
+  for (j in 2:lenm) {
+    Ft <- cbind(Ft,((f.fct(m+E[,j])-f.fct(m-E[,j]))/(2*d[j])))
+  }
+  dimnames(Ft) <- NULL
+  t(Ft)
+}
+CalcCovp <- function(params, ASkf_result){
+  y <- params$freq
+  Z <- t(t(rep(1, length(y))))
+  N <- sum(params$freq)
+  m <- ASkf_result$pars * N
+  #p <- m*c(1/Z %*% t(Z) %*% y)
+  p <- ASkf_result$pars
+  Dm <- diag(c(m))
+  H <- num.deriv.fct(h.fct,m)
+  print(H)
+  HtDHinv <- solve(t(H) %*% (H*c(m)))
+  HHtDHinv <- H %*% HtDHinv
+  covresid <- (H*c(m)) %*% HtDHinv %*% t(H*c(m))
+  covm.unadj <- Dm - covresid
+  covp <- t(t((covm.unadj-((Z*c(m))%*%t(Z*c(m))) * c(1/N)) * c(1/N)) * c(1/N))
+  return(covp)
+}
 compareCovp_ASkf_MPH <- function(params, ASkf, mph) {
-  hess <- ASkf$hessian 
-  invHess <- solve(hess) / sum(params$freq)
+  ASkf_covp <- CalcCovp(params, ASkf)
   mph_covp <- mph$covp
   f_formula <- as.formula(paste(params$ft, "~ t"))
   funcF <- makeFun(D(f_formula))
   p <- ASkf$pars
   alphas_dP <-  CalcDerivAllAlphas(funcF, p, params$score, params$k)
   alpha_dPMat <- MakeAlpha_dPMatrix(alphas_dP, params$r, params$k)
-  cat("******use solnp inverse of hessian *****\n")
-  alphaCovp <- alpha_dPMat %*% invHess %*% t(alpha_dPMat)
+  cat("******use ASkf_covp*****\n")
+  alphaCovp <- alpha_dPMat %*% ASkf_covp %*% t(alpha_dPMat)
   print_summary(alphaCovp, ASkf, params)
   cat("******use mph_covp*****\n")
   alphaCovp <- alpha_dPMat %*% mph_covp %*% t(alpha_dPMat)
@@ -143,5 +179,4 @@ ASkf_result <- DisplayASkfResult(freq, params$ft, params$name, params$score, par
 mph_result <- mph.fit(y=freq, h.fct=mph_ASkfConstrFunc, derLt.fct=NULL, 
                       params = params)
 compareCovp_ASkf_MPH(params, ASkf_result, mph_result)
-solve(ASkf_result$hess) / sum(params$freq)
-mph_result$covp
+
