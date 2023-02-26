@@ -10,30 +10,30 @@ Calc2pc <- function(p) {
   return(pc)
 }
 CalcF2pc <- function(p, f, name) {
-  pi_c <- Calc2pc(p) + (.Machine$double.eps)^(1/3) #1.0e-6 # for log(non-zero)
+  pi_c <- Calc2pc(p) + (.Machine$double.eps)^(1/3) # for log(non-zero)
   f_formula <- as.formula(paste(name, " ~ " ,f))
   deriv_func <- deriv(f_formula, c(name), func = TRUE)
   evaluated <- deriv_func(pi_c)
   F_2_pi_c <- attributes(evaluated)$gradient
   return(F_2_pi_c)
 }
-CalcDenominator <- function(score, n) {
+CalcDenominator <- function(score, j) {
   ans <- 1
-  for (i in 1:(n-1)) {
-    ans <- ans * (score[[n]] - score[[i]])
+  for (i in 1:(j-1)) {
+    ans <- ans * (score[[j]] - score[[i]])
   }
   return(ans)
 }
-CalcNumerator <- function(score, alpha, n) {
+CalcNumerator <- function(score, alpha, j) {
   ans <- 0
-  i <- 1
-  while(i <= (n-2)) {
+  h <- 1
+  while(h <= (j-2)) {
     mul <- 1
-    for (j in 1:i) {
-      mul <- mul * (score[[n]] - score[[j]])
+    for (i in 1:h) {
+      mul <- mul * (score[[j]] - score[[i]])
     }
-    ans <- ans + mul * alpha[[i]]
-    i <- i + 1
+    ans <- ans + mul * alpha[[h]]
+    h <- h + 1
   }
   return(ans)
 }
