@@ -72,12 +72,12 @@ CalcAlphaScoreSum <- function(alphas, score, k, i, j) {
   return(alpha_score_sum)
 }
 ASkfConstrFunc <- function(p, ASkf_f, name, score, k, ...) {
-  rows <- CountRow(p)
+  r <- CountRow(p)
   ASkf_0Sum_Constr <- c(sum(p) - 1)
   F2pc <- CalcF2pc(p, ASkf_f, name)
   alphas <- CalcAllAlphas(F2pc, score, k)
-  if (k < rows-1) {
-    for (j in (k+2):rows) {
+  if (k < r-1) {
+    for (j in (k+2):r) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, 1, j)
       IdxIJ <- RowColToIdx(p, 1, j)
       IdxJI <- RowColToIdx(p, j, 1)
@@ -85,8 +85,8 @@ ASkfConstrFunc <- function(p, ASkf_f, name, score, k, ...) {
                                  F2pc[[IdxIJ]] - F2pc[[IdxJI]] - alpha_score_sum)
     }
   }
-  for (i in 2:(rows-1)) {
-    for (j in (i+1):rows) {
+  for (i in 2:(r-1)) {
+    for (j in (i+1):r) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
       IdxIJ <- RowColToIdx(p, i, j)
       IdxJI <- RowColToIdx(p, j, i)
@@ -99,25 +99,25 @@ ASkfConstrFunc <- function(p, ASkf_f, name, score, k, ...) {
 ASkfModel <- function(freq, f, name, score, k, ctrl) {
   p0 <- rep(1/length(freq), length(freq))
   lowerBound <- rep(0, length(freq))
-  rows <- CountRow(freq)
-  constr_num <- rows * (rows - 1) / 2 - k
+  r <- CountRow(freq)
+  constr_num <- r * (r - 1) / 2 - k
   eqB <- rep(0, constr_num + 1)
   solnpResult <- solnp(p0, fun = objectFunc, eqfun = ASkfConstrFunc, eqB = eqB,
                        LB = lowerBound,control = ctrl, freq = freq, ASkf_f = f, name = name,
                        score = score, k = k)
-  solnpResult$df <- rows * (rows - 1) / 2 - k
+  solnpResult$df <- r * (r - 1) / 2 - k
   return(solnpResult)
 }
 # covarience section ############
 CalcAlphaSigma <- function(freq, f, name, score, k, ASkf_result) {
   params <- MakeASkfParamList(f, name, score, k)
   params$freq <- freq
-  params$rows <- CountRow(freq)
+  params$r <- CountRow(freq)
   ASkf_Sigma <- CalcSigma(params, ASkf_result)
   f_formula <- as.formula(paste(params$f, "~ ", name))
   funcF <- makeFun(D(f_formula))
   p <- ASkf_result$pars
-  alpha_dPMat <- MakeAlphaDiffPMatrix(f, name, p, params$rows, k, score)
+  alpha_dPMat <- MakeAlphaDiffPMatrix(f, name, p, params$r, k, score)
   alphaSigma <- alpha_dPMat %*% ASkf_Sigma %*% t(alpha_dPMat)
   return(alphaSigma)
 }
@@ -130,9 +130,9 @@ CalcSigma <- function(params, ASkf_result){
   return(Sigma)
 }
 NumDiff <- function(hFunc, p, params) {
-  rows <- CountRow(p)
-  constr_num <- rows * (rows - 1) / 2 - params$k
-  ans <- matrix(c(1:(constr_num * rows * rows)), nrow = rows * rows)
+  r <- CountRow(p)
+  constr_num <- r * (r - 1) / 2 - params$k
+  ans <- matrix(c(1:(constr_num * r * r)), nrow = r * r)
   eps <- (.Machine$double.eps)^(1/3)
   d <- eps * p + eps  
   E <- diag(d)
@@ -172,7 +172,7 @@ MakeAlphaDiffPMatrix <- function(f, name, p, r, k, score){
   return(ans)
 }
 ASkfConstr_No0Sum <- function(p, params, ...) {
-  rows <- CountRow(p)
+  r <- CountRow(p)
   f <- params$f
   name <- params$name
   score <- params$score
@@ -180,8 +180,8 @@ ASkfConstr_No0Sum <- function(p, params, ...) {
   ASkf_Constr <- c()
   F2pc <- CalcF2pc(p, f, name)
   alphas <- CalcAllAlphas(F2pc, score, k)
-  if (k < rows-1) {
-    for (j in (k+2):rows) {
+  if (k < r-1) {
+    for (j in (k+2):r) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, 1, j)
       IdxIJ <- RowColToIdx(p, 1, j)
       IdxJI <- RowColToIdx(p, j, 1)
@@ -189,8 +189,8 @@ ASkfConstr_No0Sum <- function(p, params, ...) {
                             F2pc[[IdxIJ]] - F2pc[[IdxJI]] - alpha_score_sum)
     }
   }
-  for (i in 2:(rows-1)) {
-    for (j in (i+1):rows) {
+  for (i in 2:(r-1)) {
+    for (j in (i+1):r) {
       alpha_score_sum <- CalcAlphaScoreSum(alphas, score, k, i, j)
       IdxIJ <- RowColToIdx(p, i, j)
       IdxJI <- RowColToIdx(p, j, i)
@@ -251,7 +251,6 @@ DisplayASkfResult <- function(freq, f, name, score, k, output = TRUE, ctrl = lis
   alphas <- CalcAllAlphas(F2pc, score, k)
   alphaStdError <- sqrt(diag(CalcAlphaSigma(freq, f, name, score, k, result)) / sum(freq))
   interval <- 1.96 * alphaStdError
-  
   upper <- alphas + interval[1:k]
   lower <- alphas - interval[1:k]
   result$alphas <- alphas
