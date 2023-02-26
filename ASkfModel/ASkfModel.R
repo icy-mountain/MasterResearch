@@ -2,7 +2,7 @@
 # alpha in signature means alpha_star.
 # Sigma -> variance-covariance matrix of pi.
 # AlphaSigma -> (dalpha/dpi) %*% Sigma %*% (dalpha/dpi)^T
-# solnp section####
+# solnp section ############
 Calc2pc <- function(p) {
   p_T <- TransoseVec(p)
   pc <- 2 * p / (p + p_T)
@@ -108,7 +108,7 @@ ASkfModel <- function(freq, f, name, score, k, ctrl) {
   solnpResult$df <- rows * (rows - 1) / 2 - k
   return(solnpResult)
 }
-# covarience section####
+# covarience section ############
 CalcAlphaSigma <- function(freq, f, name, score, k, ASkf_result) {
   params <- MakeASkfParamList(f, name, score, k)
   params$freq <- freq
@@ -208,6 +208,7 @@ MakeASkfParamList <- function(f, name, score, k){
   params$k <- k
   return(params)
 }
+# display section ############
 FormatAlphaSigma <- function(alphas, alphaStdError, lower, upper){
   cat("alpha_stars:", "\n")
   cat("              ", "Estimate  ", "Std.Error  ", "Confidential.Interval", "\n", sep="")
