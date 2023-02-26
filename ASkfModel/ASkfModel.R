@@ -111,9 +111,7 @@ ASkfModel <- function(freq, f, name, score, k, ctrl) {
 }
 # covarience section ############
 CalcAlphaSigma <- function(freq, f, name, score, k, result) {
-  params <- MakeASkfParamList(f, name, score, k)
-  params$freq <- freq
-  params$r <- CountRow(freq)
+  params <- MakeASkfParamList(freq, f, name, score, k)
   Sigma <- CalcSigma(params, result)
   f_formula <- as.formula(paste(params$f, "~ ", name))
   funcF <- makeFun(D(f_formula))
@@ -147,16 +145,16 @@ NumDiff <- function(hFunc, p, params) {
 }
 # partial diff of alpha by pi
 PartDiff <- function(f, name, p, i, j, k, score){
-  minimum <- (.Machine$double.eps)^(1/3)
+  eps <- (.Machine$double.eps)^(1/3)
   p_plus <- p
   p_minus <- p
-  p_plus[[RowColToIdx(p_plus, i, j)]] <- P_(p_plus, i, j) + minimum
-  p_minus[[RowColToIdx(p_minus, i, j)]] <- P_(p_minus, i, j) - minimum
+  p_plus[[RowColToIdx(p_plus, i, j)]] <- P_(p_plus, i, j) + eps
+  p_minus[[RowColToIdx(p_minus, i, j)]] <- P_(p_minus, i, j) - eps
   F2pc_plus <- CalcF2pc(p_plus, f, name)
   F2pc_minus <- CalcF2pc(p_minus, f, name)
   return((CalcAllAlphas(F2pc_plus, score, k)
           - CalcAllAlphas(F2pc_minus, score, k))
-         / (2 * minimum))
+         / (2 * eps))
 }
 # make matrix by PartDiff
 MakeAlphaDiffPMatrix <- function(f, name, p, r, k, score){
@@ -201,12 +199,14 @@ ASkfConstr_No0Sum <- function(p, params, ...) {
   }
   return (ASkf_Constr)
 }
-MakeASkfParamList <- function(f, name, score, k){
+MakeASkfParamList <- function(freq, f, name, score, k){
   params <- c()
+  params$freq <- freq
   params$f <- f
   params$name <- name
   params$score <- score
   params$k <- k
+  params$r <- CountRow(freq)
   return(params)
 }
 # display section ############
