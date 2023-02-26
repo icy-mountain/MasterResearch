@@ -1,6 +1,7 @@
-# Note: ####
+# Note: ############
+# p means pi:π in codes.
 # alpha in signature means alpha_star.
-# Sigma -> variance-covariance matrix of pi.
+# Sigma means variance-covariance matrix of pi.
 # AlphaSigma -> (dalpha/dpi) %*% Sigma %*% (dalpha/dpi)^T
 # solnp section ############
 Calc2pc <- function(p) {
