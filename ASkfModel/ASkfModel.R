@@ -110,20 +110,20 @@ ASkfModel <- function(freq, f, name, score, k, ctrl) {
   return(solnpResult)
 }
 # covarience section ############
-CalcAlphaSigma <- function(freq, f, name, score, k, ASkf_result) {
+CalcAlphaSigma <- function(freq, f, name, score, k, result) {
   params <- MakeASkfParamList(f, name, score, k)
   params$freq <- freq
   params$r <- CountRow(freq)
-  ASkf_Sigma <- CalcSigma(params, ASkf_result)
+  Sigma <- CalcSigma(params, result)
   f_formula <- as.formula(paste(params$f, "~ ", name))
   funcF <- makeFun(D(f_formula))
-  p <- ASkf_result$pars
+  p <- result$pars
   alpha_dPMat <- MakeAlphaDiffPMatrix(f, name, p, params$r, k, score)
-  alphaSigma <- alpha_dPMat %*% ASkf_Sigma %*% t(alpha_dPMat)
+  alphaSigma <- alpha_dPMat %*% Sigma %*% t(alpha_dPMat)
   return(alphaSigma)
 }
-CalcSigma <- function(params, ASkf_result){
-  p <- ASkf_result$pars 
+CalcSigma <- function(params, result){
+  p <- result$pars 
   Dp <- diag(p)
   H <- NumDiff(ASkfConstr_No0Sum, p, params)
   inv_HDH <- solve(t(H) %*% Dp %*% H)
