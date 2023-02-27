@@ -223,7 +223,6 @@ FormatAlphaSigma <- function(alphas, alphaStdError, lower, upper){
     cat("]", sep="")
     if (lower[[i]] * upper[[i]] > 0)
       cat(" *", sep="")
-    # cat(abs(upper[[i]] - lower[[i]]))
     cat("\n")
   }
   cat("(*) means interval excluding 0.", "\n")
