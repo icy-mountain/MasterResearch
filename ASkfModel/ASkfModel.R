@@ -236,6 +236,7 @@ FormatValues <- function(k, f, result){
   cat("pValue:", format(result$pValue, digits=4, width=4), "\n")
 }
 DisplayASkfResult <- function(freq, f, name, score, k, output = TRUE, ctrl = list(trace = 0)) {
+  freq[freq <= 0] <- 0.01
   result <- ASkfModel(freq, f, name, score, k, ctrl)
   pHat <- result$pars
   F2pc <- CalcF2pc(pHat, f, name)
@@ -258,6 +259,6 @@ DisplayASkfResult <- function(freq, f, name, score, k, output = TRUE, ctrl = lis
     FormatValues(k, f, result)
     FormatAlphaSigma(alphas, alphaStdError, lower, upper)
   }
-  
+
   return(result)
 }
