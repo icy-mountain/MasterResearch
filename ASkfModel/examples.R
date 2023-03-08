@@ -1,8 +1,6 @@
 rm(list = ls(all.names = TRUE))
 # install.packages('Rsolnp')
-# install.packages('mosaicCalc')
 library(Rsolnp)
-library(mosaicCalc)
 source("./tables.R")
 source("./utilities.R")
 source("./ASkfModel.R")

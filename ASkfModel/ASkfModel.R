@@ -113,10 +113,7 @@ ASkfModel <- function(freq, f, name, score, k, ctrl) {
 CalcAlphaSigma <- function(freq, f, name, score, k, result) {
   params <- MakeASkfParamList(freq, f, name, score, k)
   Sigma <- CalcSigma(params, result)
-  f_formula <- as.formula(paste(params$f, "~ ", name))
-  funcF <- makeFun(D(f_formula))
-  p <- result$pars
-  alpha_dPMat <- MakeAlphaDiffPMatrix(f, name, p, params$r, k, score)
+  alpha_dPMat <- MakeAlphaDiffPMatrix(f, name, result$pars, params$r, k, score)
   alphaSigma <- alpha_dPMat %*% Sigma %*% t(alpha_dPMat)
   return(alphaSigma)
 }
