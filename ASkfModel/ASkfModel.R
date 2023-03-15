@@ -207,6 +207,14 @@ MakeASkfParamList <- function(freq, f, name, score, k){
   return(params)
 }
 # display section ############
+FormatValues <- function(k, f, result){
+  cat("**********result**********", "\n")
+  cat("k:", k, "\n")
+  cat("f:", format(f), "\n")
+  cat("df:", result$df, "\n")
+  cat("G2:", format(result$G2, digits=4, width=4), "\n")
+  cat("pValue:", format(result$pValue, digits=4, width=4), "\n")
+}
 FormatAlphaSigma <- function(alphas, alphaStdError, lower, upper){
   cat("alpha_stars:", "\n")
   cat("              ", "Estimate  ", "Std.Error  ", "Confidential.Interval", "\n", sep="")
@@ -224,13 +232,31 @@ FormatAlphaSigma <- function(alphas, alphaStdError, lower, upper){
   }
   cat("(*) means interval excluding 0.", "\n")
 }
-FormatValues <- function(k, f, result){
-  cat("**********result**********", "\n")
-  cat("k:", k, "\n")
-  cat("f:", format(f), "\n")
-  cat("df:", result$df, "\n")
-  cat("G2:", format(result$G2, digits=4, width=4), "\n")
-  cat("pValue:", format(result$pValue, digits=4, width=4), "\n")
+FormatAlphaSigmaWithZ <- function(alphas, alphaStdError, zValue){
+  cat("alpha_stars:", "\n")
+  cat("              ", "Estimate  ", "Std.Error  ", "z value  ", "Pr(>|z|)", "\n", sep="")
+  k <- length(alphas)
+  for (i in 1:k) {
+    Pr_z <- pchisq(q=zValue[[i]]^2, df=1, lower.tail=FALSE)
+    if (Pr_z < 0.0001) {
+      cat("alpha_star", i, " ", format(c(alphas[[i]], alphaStdError[[i]], zValue[[i]]),
+                                       justify = "right", digits=4, nsmall=4, width=10), "   <0.0001", sep="")
+    } else {
+      cat("alpha_star", i, " ", format(c(alphas[[i]], alphaStdError[[i]], zValue[[i]], Pr_z),
+                                       justify = "right", digits=4, nsmall=4, width=10), sep="")
+    }
+    if (0 <= Pr_z && Pr_z < 0.001)
+      cat(" ***", sep="")
+    if (0.001 <= Pr_z && Pr_z < 0.01)
+      cat(" **", sep="")
+    if (0.01 <= Pr_z && Pr_z < 0.05)
+      cat(" *", sep="")
+    if (0.05 <= Pr_z && Pr_z < 0.1)
+      cat(" .", sep="")
+    cat("\n")
+  }
+  cat("\n")
+  cat("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1", "\n")
 }
 DisplayASkfResult <- function(freq, f, name, score, k, output = TRUE, ctrl = list(trace = 0)) {
   freq[freq <= 0] <- 0.01
@@ -257,5 +283,30 @@ DisplayASkfResult <- function(freq, f, name, score, k, output = TRUE, ctrl = lis
     FormatAlphaSigma(alphas, alphaStdError, lower, upper)
   }
 
+  return(result)
+}
+DisplayASkfResultWithZ <- function(freq, f, name, score, k, output = TRUE, ctrl = list(trace = 0)) {
+  freq[freq <= 0] <- 0.01
+  result <- ASkfModel(freq, f, name, score, k, ctrl)
+  pHat <- result$pars
+  F2pc <- CalcF2pc(pHat, f, name)
+  mHat <- pHat * sum(freq)
+  result$G2 <- CalcG2(freq, mHat)
+  result$pValue <- pchisq(q=result$G2, df=result$df, lower.tail=FALSE)
+  # if for S model
+  if (k <= 0) {
+    if (output) 
+      FormatValues(k, f, result)
+    return(result)
+  }
+  alphas <- CalcAllAlphas(F2pc, score, k)
+  alphaStdError <- sqrt(diag(CalcAlphaSigma(freq, f, name, score, k, result)) / sum(freq))
+  zValue <- alphas / alphaStdError
+  result$alphas <- alphas
+  if (output) {
+    FormatValues(k, f, result)
+    FormatAlphaSigmaWithZ(alphas, alphaStdError, zValue)
+  }
+  
   return(result)
 }

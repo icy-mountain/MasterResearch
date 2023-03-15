@@ -16,6 +16,7 @@ freq <-
     4,    1,    4,    21)
 # freq <- tab1_freq
 ASkf_result <- DisplayASkfResult(freq=freq, f="t * log(t)", name="t", score=1:4, k=3)
+ASkf_result <- DisplayASkfResultWithZ(freq=freq, f="t * log(t)", name="t", score=1:4, k=3)
 ASkf_result <- DisplayASkfResult(freq=freq, f="t * log(t)", name="t", score=1:4, k=3, output=FALSE)
 ASkf_result <- DisplayASkfResult(freq=freq, f="(1 - t)^2", name="t", score=1:4, k=3)
 ASkf_result <- DisplayASkfResult(freq=freq, f="(t^(4) - t) / 12", name="t", score=1:4, k=3)
